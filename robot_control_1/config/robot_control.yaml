@@ -1,0 +1,102 @@
+# Primero se hace la descripcion del control y los parametros utilizados
+controller_manager:
+  ros__parameters:
+    # Parametros de ritmo de actualizacion de ros (Frecuencia de funcionamiento)
+    update_rate: 100
+    # Configuracion de parametro de uso de tiempo similar (Tiempo real de simulacion)
+    use_sim_time: true
+
+    # Se crea un nuevo controlador, usando las funciones de la libreria de control. Con el cual se llama a un control diferencial
+    robot_new_controller:
+      # Se define el tipo de controlador que se esta creando
+      type: diff_drive_controller/DiffDriveController
+    # Funcion para conoer parametros de estado actual del robot
+    joint_state_broadcaster:
+      # Definimos el tipo de valor interno en la funcion
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    # Etiqueta para control de velocidad
+    simple_velocity_controller:
+      # El tipo de controlador segun el paquete que se esta usando
+      type: velocity_controllers/JointGroupVelocityController
+
+# En esta seccion es importante entender que se tienen a disposicion 2 tipos de controladores, por lo que se debe realizar la logica de seleccion de los controladores
+# dependiendo de la tarea qie se desee realizar
+
+# Se define el uso del controlador creado
+robot_new_controller:
+  ros__parameters:
+    # Tipo de controlador
+    type: diff_drive_controller/DiffDriveController
+    # Uso de tiempo real
+    use_stamped_vel: true
+    # Asignacion de los aprametros de cada una de las ruedas de la transmision
+    left_wheel_names: ['wheel_left_joint']
+    right_wheel_names: ['wheel_right_joint']
+    # ritmo de publicacion
+    publish_rate: 50.0
+    # Covarianza de posicion y demas funciones necesarias para posicionamiento y uso de controlador
+    pose_covariance_diagonal: [0.001, 0.001, 1.0e-3, 1.0e-3, 1.0e-3, 0.01]
+    twist_covariance_diagonal: [0.001, 0.001, 1.0e-3, 1.0e-3, 1.0e-3, 0.01]
+
+    # Luego se define el radio e las llantas 
+    wheel_radius: 0.033
+    wheel_separation: 0.17
+    # Definimos el multiplicador de velocidad en las ruedas (para este caso es 1)
+    left_wheel_radius_multiplier: 1.0
+    right_wheel_radius_multiplier: 1.0 
+    wheel_separation_multiplier: 1.0
+
+    # Timeout de velocidad de las ruedas (en caso no se encuentre mas ordenes de avance, detenga el movimiento)
+    cmd_vel_timeout: 0.25
+    # Se define la base del robot que se tendra en cuenta para el robot
+    base_frame_id: base_footprint
+    # Publicacion del limite de velocidad del robot (validacion booleana)
+    publish_limited_velocity: true
+    # Publicacion de los datos de las ruedas del robot
+    publish_wheel_data: true
+    # Activacion de odometria del robot (validacion de transformacion de odometria)
+    enable_odom_tf: true
+
+    # descripcion de caracteristicas de movimiento
+    linear:
+      x: 
+        # establece los limites de velocidad del robot
+        has_velocity_limits: true
+        max_velocity: 1.0
+        min_velocity: -0.5
+        # Tambien se tiene la validacion de la aceleracion del robot
+        has_aceleration_limits: true
+        max_aceleration: 0.8
+        min_aceleration: -0.4
+        # Investigar el siguiente comando
+        has_jerk_limits: false
+
+    # Ahora las configuraciones de control angular
+    angular:
+      z:
+        # establece los limites de velocidad del robot
+        has_velocity_limits: true
+        max_velocity: 1.7
+        min_velocity: -1.7
+        # Tambien se tiene la validacion de la aceleracion del robot
+        has_aceleration_limits: true
+        max_aceleration: 1.5
+        min_aceleration: -1.5
+        # Investigar el siguiente comando
+        has_jerk_limits: false
+
+# Creamos el controlador
+simple_velocity_controller:
+  # Descripcion de parametros
+  ros__parameters:
+    # Articulaciones de las cuales esta encargado el controlador
+    joints:
+      - wheel_left_joint
+      - wheel_right_joint
+      # Aqui se ingresan las articulaciones que estan afectadas por el controlador creado en el paquete
+     
+
+
+# El siguiente archivo contiene la descripcion del control para el curso realizado en udemy
+# https://www.udemy.com/course/self-driving-and-ros-2-learn-by-doing-odometry-control/learn/lecture/39579572#overview

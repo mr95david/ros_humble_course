@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+
+<robot name="ntarobot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    
+    <!-- Se especifica la siguiente etiqueta que define el sistema de transmision para una determinada pieza -->
+    <transmission name="wheel_right_transmission">
+        <!-- Se agrega el plgin que crea la interaccion de transmision de la pieza -->
+        <plugin>transmission_interface/SimpleTransmission</plugin>
+        <!-- La etiqueta de actuador hace referencia al motor encargado del movimiento de la pieza en cuestion -->
+        <actuator name="wheel_right_motor" role="actuator_right"/>
+        <!-- En esta etiqueta se refiere a la articulacion implicada en el movimiento de la rueda derecha -->
+        <joint name="wheel_right_joint" role="joint_right">
+            <!-- Final mente tambien se ingresa el valor de la reduccion mecanica de la rueda -->
+            <mechanical_reduction>1.0</mechanical_reduction>
+        </joint>
+    </transmission>
+
+    <!-- Se especifica la siguiente etiqueta que define el sistema de transmision para una determinada pieza -->
+    <transmission name="wheel_left_transmission">
+        <plugin>transmission_interface/SimpleTransmission</plugin>
+        <!-- La etiqueta de actuador hace referencia al motor encargado del movimiento de la pieza en cuestion -->
+        <actuator name="wheel_left_motor" role="actuator_left"/>
+        <!-- En esta etiqueta se refiere a la articulacion implicada en el movimiento de la rueda derecha -->
+        <joint name="wheel_left_joint" role="joint_left">   
+            <!-- Final mente tambien se ingresa el valor de la reduccion mecanica de la rueda -->
+            <mechanical_reduction>1.0</mechanical_reduction>
+        </joint>
+    </transmission>
+    
+    <gazebo reference="wheel_left_link">
+        <!-- Entender mejor los valores agregados en esta seccion -->
+        <mu1>1000000000000000.0</mu1>
+        <mu2>1000000000000000.0</mu2>
+        <kp>1000000000000.0</kp>
+        <kd>10.0</kd>
+        <minDepth>0.001</minDepth>
+        <maxVel>0.1</maxVel>
+        <fdir1>1 0 0</fdir1>
+    </gazebo>
+
+    <!-- Creamos un tag de gazebo, que albergara las propiedades de simulacion de gazebo -->
+    <gazebo reference="wheel_right_link">
+        <!-- Entender mejor los valores agregados en esta seccion -->
+        <mu1>1000000000000000.0</mu1>
+        <mu2>1000000000000000.0</mu2>
+        <kp>1000000000000.0</kp>
+        <kd>10.0</kd>
+        <minDepth>0.001</minDepth>
+        <maxVel>0.1</maxVel>
+        <fdir1>1 0 0</fdir1>
+    </gazebo>
+
+    <gazebo reference="caster_rear_link">
+        <!-- Entender mejor los valores agregados en esta seccion -->
+        <!-- Estos valores corresponden a la mu, coeficiente de friccion del m  aterial -->
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
+        <!-- Coeficiente con el que se afecta a la energia potencial ?-->
+        <kp>1000000.0</kp>
+        <kd>100.0</kd>
+        <!-- Profundidad minima -->
+        <minDepth>0.001</minDepth>
+        <!-- Maximo valor de velocidad -->
+        <maxVel>1.0</maxVel>
+    </gazebo>
+
+    <gazebo reference="caster_front_link">
+        <!-- Entender mejor los valores agregados en esta seccion -->
+        <!-- Estos valores corresponden a la mu, coeficiente de friccion del material -->
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
+        <!-- Coeficiente con el que se afecta a la energia pot  encial ?-->
+        <kp>1000000.0</kp>
+        <kd>100.0</kd>
+        <!-- Profundidad minima -->
+        <minDepth>0.001</minDepth>
+        <!-- Maximo valor de velocidad -->
+        <maxVel>1.0</maxVel>
+    </gazebo>
+
+    
+    <!-- Agregamos al final el nuevo plugin de gazebo -->
+    <gazebo>
+        <!-- Se especifica la localizacion del paquete o plugin que se esta llamando -->
+        <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+            <!-- Luego se establece los ejecutables del robot segun se necesita -->
+            <!-- Entre ellos encontramos la localizacion de la localizacion del robot, el publicador de la posicion del robot-->
+            <robot_param>robot_description</robot_param>
+            <robot_param_node>robot_state_publisher</robot_param_node>
+            <!-- Estos parametros dependen del sistema de control creado para el robot -->
+            <parameters>$(find robot_control_1)/config/robot_control.yaml</parameters>
+            <!-- $(find robot_control_1)/config/robot_control.yaml-->
+        </plugin>
+    </gazebo>
+</robot>

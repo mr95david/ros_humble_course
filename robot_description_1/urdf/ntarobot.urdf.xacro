@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+
+<!-- Inicio de creacion del robot-->
+<!-- Funcion como una ejecucion simple de html-->
+<!-- En esta seccio define la clase del robot general-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ntarobot">
+    <!-- Creamos un inclue que funciona como importe de funciones de un archivo nombrado del tipo xml -->
+    <xacro:include filename="$(find robot_description_1)/urdf/ntarobot_gazebo.xacro"/>
+    <!-- Incluimos el archivo de control de xacro -->
+    <xacro:include filename="$(find robot_description_1)/urdf/ntarobot_ros_control.xacro"/>
+
+    <!-- Creamos luego el primer link del robot -->
+    <!-- Este primer link hace referencia al punto de existencia en el espacio del robot-->
+    <link name="base_footprint"/>
+
+    <!-- Luego se crea el link que corresponde al baselink (En algunos casos se controla este con la IMU) -->
+    <link name="base_link">
+        <!-- Cramos la seccion que describe la inercia del objeto correspondiente a la caja del robot -->
+        <inertial>
+            <!-- En este caso los valores de inercia son tomados por defecto del tutorial que se esta trabajando -->
+            <!-- Este origen corresponde al la relacion de accion de la inercia con respecto al inicio de posicion del robot -->
+            <origin xyz="0.0 0.0 0.04" rpy="0.0 0.25 0.3"/>
+            <!-- Es importante investigar en que valores se estan dando las caracteristicas de inercia de los componentes -->
+            <mass value="8.2573504e-01"/>
+            <!-- Es importante investigar en que valores se estan dando las caracteristicas de inercia de los componentes -->
+            <inertia ixx="2.2124416e-02" ixy="-1.2294101e-04" 
+                ixz="3.49388785e-04" iyy="2.1193702e-02" 
+                iyz="-5.0120904e-05" izz="2.0864271e-02"
+            />
+        </inertial>
+        <!-- Primero creamos la descripcion visual que corresponde a la estructura visible de nuestro robot en rviz -->
+        <!-- Esta seccion del codigo corresponde unicamente a la seccion visual de la simulacion -->
+        <visual>
+            <!-- Tambien establecemos el origen donde existiran las figuras importadas -->
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <!-- La geometria del objeto es dada por el archivo stl, previamente descargado, el cual puede ser impotado desde la funcion mesh -->
+            <geometry>
+                <mesh filename="package://robot_description_1/meshes/base_link.STL"/>
+            </geometry>
+        </visual>
+        <!-- Para agregar una seccion de que tenga interaccion con el ambiente es necesario agregar la seccion de colisiones -->
+        <collision>
+            <!-- Se debe agregar la configuracion que se tiene en el tag de visualizacion -->
+            <!-- Tambien establecemos el origen donde existiran las figuras importadas -->
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <!-- La geometria del objeto es dada por el archivo stl, previamente descargado, el cual puede ser impotado desde la funcion mesh -->
+            <geometry>
+                <mesh filename="package://robot_description_1/meshes/base_link.STL"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Para conectar 2 links es necesario crear un joint que sirve como la articulaion entre las 2 secciones -->
+    <!-- El tipo de conexion fija, define que la existencia de la figura no cambia -->
+    <joint name="base_joint" type="fixed">
+        <!-- Lueo se establece la relacion de jerarquia -->
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <!-- Es importante definir en esta seccion la posiicon especifica de la figura en cuestion -->
+        <!-- En este caso segun la documentaccion, el base_link se ubica sobre 33 milimetros sobre el suelo (Quiere decir que tiene una diferencia espacial sobre el plano Z) -->
+        <origin xyz="0.0 0.0 0.033" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    <!-- Siguiente link, corresponde a otra figura existente en el modelo del robot -->
+    <!-- Este link corresponde a la rueda derecha del robot -->
+    <link name="wheel_right_link">
+        <!-- Se agrega el tag para la descripcion inercial de las ruedas del robot -->
+        <inertial>
+            <origin xyz="0 -0.014 0" rpy="0 0 0" />
+            <mass value="0.0530086090966721" />
+            <inertia ixx="1.88176298336665E-05" ixy="-4.8444933029987E-10" ixz="1.88163708851143E-08"
+                     iyy="3.11510738647764E-05" iyz="-6.93560663069607E-11"
+                     izz="1.8801969558182E-05" />
+        </inertial>
+        <!-- Luego se agrega la seccion visual, en el caso de un disenho propio lo recomendable es arrancar por esta seccion-->
+        <visual>
+            <!-- Se establece la posicion inicial de la rueda segun al diseño del robot -->
+            <origin xyz="0.0 0.0 0.0" rpy="1.57 0.0 0.0"/>
+            <geometry>
+                <!-- Llamado a la figura existente de la rueda -->
+                <mesh filename="package://robot_description_1/meshes/wheel_right_link.STL"/>
+            </geometry>
+        </visual>
+        <!-- Se agrega la seccion de tag de colisiones para la figura de las ruedas-->
+        <collision>
+            <!-- Tambien se especifica el origen de colisiones -->
+            <origin xyz="0.0 -0.015 0.0" rpy="1.57 0.0 0.0"/>
+            <!-- En la seccion de la geometria se establece la interaccion de inercia de  las figuras -->
+            <geometry>
+                <!-- Se especifica el radio de las ruedas que se utilizan -->
+                <sphere radius="0.033"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Ahora debemos crear la articulacion por la cual la pieza se conecta con el punto central del robot -->
+    <joint name="wheel_right_joint" type="continuous">
+        <!-- Relacion jerarquica de las piezas -->
+        <parent link="base_link"/>
+        <child link="wheel_right_link"/>
+        <!-- posicionamiento de la articulacion  -->
+        <!-- En esta seccion se debe indicar la posicion especifica donde se encuentra la rueda -->
+        <axis xyz="0.0 1.0 0.0"/>
+        <origin xyz="0.0 -0.0701101849418637 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    <!-- Realizaremos el mismo proceso para la llanta izquierda del robot -->
+    <link name="wheel_left_link">
+        <!-- Tag de descripcion inercial -->
+        <inertial>
+            <origin xyz="0 0.014 0" rpy="0 0 0" />
+            <mass value="0.0530086043217644" />
+            <inertia ixx="1.8792911368909E-05"  ixy="3.31256392204584E-10" ixz="-1.14082001662767E-08"
+                     iyy="3.11510738759073E-05" iyz="-3.60499245082192E-10"
+                     izz="1.88266886146847E-05" />
+        </inertial>
+        <!-- Seccion de visualizacion de piezas-->
+        <visual>
+            <!-- Se establece la posicion inicial de la rueda segun al diseño del robot -->
+            <origin xyz="0.0 0.0 0.0" rpy="-1.57 0.0 0.0"/>
+            <geometry>
+                <!-- Llamado a la figura existente de la rueda -->
+                <mesh filename="package://robot_description_1/meshes/wheel_left_link.STL"/>
+            </geometry>
+        </visual>
+        <!-- Se agrega la seccion de tag de colisiones para la figura de las ruedas-->
+        <collision>
+            <!-- Tambien se especifica el origen de colisiones -->
+            <origin xyz="0.0 0.015 0.0" rpy="-1.57 0.0 0.0"/>
+            <!-- En la seccion de la geometria se establece la interaccion de inercia de  las figuras -->
+            <geometry>
+                <!-- Se especifica el radio de las ruedas que se utilizan -->
+                <sphere radius="0.033"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Ahora debemos crear la articulacion por la cual la pieza se conecta con el punto central del robot -->
+    <joint name="wheel_left_joint" type="continuous">
+        <!-- Relacion jerarquica de las piezas -->
+        <parent link="base_link"/>
+        <child link="wheel_left_link"/>
+        <!-- posicionamiento de la articulacion  -->
+        <!-- En esta seccion se debe indicar la posicion especifica donde se encuentra la rueda -->
+        <axis xyz="0.0 1.0 0.0"/>
+        <origin xyz="0.0 0.0701101849418642 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    <!-- El siguiente link que se debe crear es la rueda castor frotal, que se usa en este tipo de robots, en el caso del robot Solver, esta rueda no existe -->
+    <link name="caster_front_link">
+        <!-- Tag de descripcion  inercial -->
+        <inertial>
+            <origin xyz="3.89968128948481E-07 2.40073004698083E-07 0.00219173397061506" rpy="0 0 0" />
+            <mass value="1.44379265037903E-06" />
+            <inertia ixx="7.23075276010246E-11" ixy="-6.10956883467859E-16" ixz="2.22849693525031E-15"
+                     iyy="3.8713793085917E-11"  iyz="2.93909858781952E-15"
+                     izz="1.00967486676306E-10" />
+        </inertial>
+        <!-- Tag de visualizacion de piezas-->
+        <visual>
+            <!-- Tambien se debe establecer el origen de la lanta -->
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <!-- Creamos el punto donde se importa la figura ya diseñada de la rueda -->
+                <mesh filename="package://robot_description_1/meshes/caster_front_link.STL"/>
+            </geometry>
+        </visual>
+        <!-- En el caso de la rueda castor tenemos en cuenta que el tamanho es mucho menor al de las ruedas normales, por lo que se crea un colision con respecto a objeto mas pequenho-->
+        <collision>
+            <!-- Tambien se especifica el origen de colisiones -->
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <!-- En la seccion de la geometria se establece la interaccion de inercia de  las figuras -->
+            <geometry>
+                <!-- Se especifica el radio de las ruedas que se utilizan -->
+                <sphere radius="0.005"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Creamos la articulacion de la rueda caster -->
+    <joint name="caster_front_joint" type="fixed">
+        <!-- Establecemos las relaciones de jerarquia -->
+        <parent link="base_link"/>
+        <child link="caster_front_link"/>
+        <!-- La posicion inicial de dicho link en el espacio -->
+        <origin rpy="0.0 0.0 0.0" xyz="0.04755 0.0 -0.0275"/>
+        <axis xyz="0.0 0.0 0.0"/>
+        
+    </joint>
+
+    <!-- El siguiente link que se debe crear es la rueda castor trasera, que se usa en este tipo de robots, en el caso del robot Solver, esta rueda no existe -->
+    <link name="caster_rear_link">
+        <!-- Tag de descripcion inercial -->
+        <inertial>
+            <origin xyz="3.8996812895542E-07 2.40073004698083E-07 0.00219173397061509" rpy="0 0 0" />
+            <mass value="1.44379265037902E-06" />
+            <inertia ixx="7.23075276010246E-11" ixy="-6.10956872363424E-16" ixz="2.22849693527207E-15"
+                     iyy="3.87137930859167E-11" iyz="2.939098587861E-15"
+                     izz="1.00967486676306E-10" />
+        </inertial>
+        <!-- Tag de descripcion visual de piezas -->
+        <visual>
+            <!-- Tambien se debe establecer el origen de la lanta -->
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <!-- Creamos el punto donde se importa la figura ya diseñada de la rueda -->
+                <mesh filename="package://robot_description_1/meshes/caster_rear_link.STL"/>
+            </geometry>
+        </visual>
+        <!-- En el caso de la rueda castor tenemos en cuenta que el tamanho es mucho menor al de las ruedas normales, por lo que se crea un colision con respecto a objeto mas pequenho-->
+        <collision>
+            <!-- Tambien se especifica el origen de colisiones -->
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <!-- En la seccion de la geometria se establece la interaccion de inercia de  las figuras -->
+            <geometry>
+                <!-- Se especifica el radio de las ruedas que se utilizan -->
+                <sphere radius="0.005"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Creamos la articulacion de la rueda caster -->
+    <joint name="caster_rear_joint" type="fixed">
+        <!-- Establecemos las relaciones de jerarquia -->
+        <parent link="base_link"/>
+        <child link="caster_rear_link"/>
+        <!-- La posicion inicial de dicho link en el espacio -->
+        <origin rpy="0.0 0.0 0.0" xyz="-0.04755 0.0 -0.0275"/>
+        <axis xyz="0.0 0.0 0.0"/>
+        
+    </joint>
+</robot>

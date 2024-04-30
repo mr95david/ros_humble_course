@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+
+<robot name="ntarobot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- Aqui se agrega las funciones del sistema de control de gazebo -->
+    <ros2_control type="system" name="RobotSystem">
+        <!-- El hardWare que cambia los valores sera guidao por el plugin de control de gazebo -->
+        <hardware>
+            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>  
+    
+
+        <!-- Ademas agregamos el control para cada una de las articulaciones en las que se tiene un actuador -->
+        <joint name="wheel_right_joint">
+            <!-- Se agrega el comando de la interface con la cual se lleva a acabo el control -->
+            <command_interface name="velocity">
+                <!-- Parametros de limitante de velocidad -->
+                <param name="min">-1</param>
+                <param name="max">1</param>
+            </command_interface>
+            <!-- Se describe tambien la interfaz de estado del robot -->
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+
+        <!-- Este proceso se repite para la rueda izquierda del robot -->
+        <joint name="wheel_left_joint">
+            <!-- Se agrega el comando de la interface con la cual se lleva a acabo el control -->
+            <command_interface name="velocity">
+                <!-- Parametros de limitante de velocidad -->
+                <param name="min">-1</param>
+                <param name="max">1</param>
+            </command_interface>
+            <!-- Se describe tambien la interfaz de estado del robot -->
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+    </ros2_control>
+</robot>
